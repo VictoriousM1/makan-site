@@ -1,5 +1,4 @@
-/* Makan site runtime: nav, point-cloud canvases, tools. No dependencies. */
-(function () {
+window.MakanInit = function () {
   'use strict';
   var reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
   var rtl = document.documentElement.dir === 'rtl';
@@ -43,7 +42,7 @@
     size(); window.addEventListener('resize', size);
     if ('IntersectionObserver' in window) new IntersectionObserver(function (e) { visible = e[0].isIntersecting; }).observe(cv);
     var mx = 0, my = 0; window.addEventListener('pointermove', function (e) { mx = e.clientX / innerWidth - .5; my = e.clientY / innerHeight - .5; });
-    function frame(now) {
+    function frame(now) { if (!cv.isConnected) return;
       if (visible || reduce) {
         var t = (now - t0) / 1000, reveal = reduce ? 1.01 : Math.min(1.01, t / 3.2);
         var yaw = (reduce ? .65 : .65 + Math.sin(t * .12) * .35) + mx * .25, pitch = .52 + my * .08;
@@ -468,7 +467,7 @@
       else if (k === '+' || k === '=') TG.zoom = clamp(TG.zoom * 1.2, .55, 3.5); else if (k === '-') TG.zoom = clamp(TG.zoom / 1.2, .55, 3.5); else used = false;
       if (used) { e.preventDefault(); touched(); } });
 
-    function frame(now) {
+    function frame(now) { if (!cv.isConnected) return;
       if (!cv.isConnected) return;
       if (visible || reduce) {
         var dt = lastNow == null ? 0 : Math.min(.1, (now - lastNow) / 1000); lastNow = now;
@@ -716,7 +715,7 @@
     var list = $('[data-rooms]', ar), tot = $('[data-area-total]'), ft = $('[data-ft]'), m2 = $('[data-m2]');
     var row = function (n, l, w) { var d = document.createElement('div'); d.className = 'room'; d.innerHTML = '<input type="text" aria-label="' + M.i18n.ar.room + '" value="' + n + '"><input type="number" step="0.01" min="0" aria-label="L" value="' + l + '"><span>×</span><input type="number" step="0.01" min="0" aria-label="W" value="' + w + '"><output>0</output><button type="button" aria-label="' + M.i18n.ar.remove + '">×</button>'; list.appendChild(d); };
     var calc = function () { var s = 0; list.querySelectorAll('.room').forEach(function (r) { var i = r.querySelectorAll('input'); var a = (+i[1].value || 0) * (+i[2].value || 0); r.querySelector('output').textContent = a.toFixed(1); s += a; });
-      tot.textContent = s.toFixed(1); var go = $('[data-area-go]'); if (go) go.href = go.dataset.base + '#a' + Math.round(s); };
+      tot.textContent = s.toFixed(1); var go = $('[data-area-go]'); if (go) go.dataset.hash = '#a' + Math.round(s); };
     M.i18n.ar.sample.forEach(function (x) { row(x[0], x[1], x[2]); });
     $('[data-add-room]', ar).addEventListener('click', function () { row(M.i18n.ar.room + ' ' + (list.children.length + 1), 4, 3); calc(); });
     list.addEventListener('click', function (e) { if (e.target.tagName === 'BUTTON') { e.target.parentNode.remove(); calc(); } });
@@ -724,5 +723,8 @@
     if (ft && m2) { ft.addEventListener('input', function () { m2.value = ((+ft.value || 0) * 0.092903).toFixed(2); }); m2.addEventListener('input', function () { ft.value = ((+m2.value || 0) / 0.092903).toFixed(1); }); }
   }
   // Prefill estimator area from #a123
-  if (est) { var m = /^#a(\d+)$/.exec(location.hash); if (m) { est.elements.area.value = m[1]; est.dispatchEvent(new Event('input')); } }
-})();
+  if (est) { var m = /^#a(\d+)$/.exec(window.__mkHash || ''); if (m) { est.elements.area.value = m[1]; est.dispatchEvent(new Event('input')); } }
+};
+window.__mkHash = location.hash || '';
+(function(){var b=document.querySelector('[data-burger]');})();
+if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', function(){ window.MakanInit(); }); else window.MakanInit();
