@@ -1,0 +1,23 @@
+name: Unpack site
+on:
+  push:
+    paths:
+      - makan-site.zip
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  unpack:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Unpack the uploaded site and commit it
+        run: |
+          if [ ! -f makan-site.zip ]; then echo "No zip to unpack"; exit 0; fi
+          unzip -o -q makan-site.zip -d .
+          rm -f makan-site.zip
+          git config user.name "makan-site-bot"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "Publish new site version from makan-site.zip" || echo "Nothing to commit"
+          git push
