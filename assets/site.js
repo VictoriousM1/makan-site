@@ -728,3 +728,41 @@ window.MakanInit = function () {
 window.__mkHash = location.hash || '';
 (function(){var b=document.querySelector('[data-burger]');})();
 if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', function(){ window.MakanInit(); }); else window.MakanInit();
+
+// ── Founding-client offer bar + floating WhatsApp button (all pages)
+(function () {
+  'use strict';
+  var PHONE = '966548648613';
+  // Offer settings: edit these to change or end the offer
+  var OFFER = {
+    ends: '2026-10-25T23:59:59+03:00',
+    ar: { text: 'عرض أول خمسة عملاء حتى نهاية الأحد 25 أكتوبر: تصوير حتى 150 م² مع النشر على خرائط جوجل وبطاقة أعمالك داخل الجولة بـ 750 ريالاً + الضريبة، والدفع بعد استلام الجولة.', cta: 'احجز عبر واتساب', close: 'إغلاق', msg: 'السلام عليكم، أرغب في حجز عرض أول خمسة عملاء (750 ريالاً).' },
+    en: { text: 'Founding-client offer, first five clients, until the end of Sunday 25 October: a scan of up to 150 m², published on Google Maps with your business card inside the tour, for 750 SAR + VAT. Pay after you receive the tour.', cta: 'Book on WhatsApp', close: 'Close', msg: "Hello, I'd like to book the founding-client offer (750 SAR)." }
+  };
+  function run() {
+    var ar = (document.documentElement.lang || '').indexOf('ar') === 0;
+    var L = ar ? OFFER.ar : OFFER.en;
+    var dismissed = false;
+    try { dismissed = sessionStorage.getItem('mk-offer-x') === '1'; } catch (e) {}
+    if (!dismissed && Date.now() < Date.parse(OFFER.ends) && !document.querySelector('.offer-bar')) {
+      var bar = document.createElement('div');
+      bar.className = 'offer-bar'; bar.setAttribute('role', 'region'); bar.setAttribute('aria-label', L.cta);
+      bar.innerHTML = '<div class="wrap offer-in"><p></p><a class="offer-cta" target="_blank" rel="noopener"></a><button type="button" class="offer-x"></button></div>';
+      bar.querySelector('p').textContent = L.text;
+      var a = bar.querySelector('a'); a.textContent = L.cta; a.href = 'https://wa.me/' + PHONE + '?text=' + encodeURIComponent(L.msg);
+      var x = bar.querySelector('button'); x.setAttribute('aria-label', L.close); x.textContent = '×';
+      x.addEventListener('click', function () { bar.remove(); try { sessionStorage.setItem('mk-offer-x', '1'); } catch (e) {} });
+      var hdr = document.querySelector('.hdr');
+      if (hdr && hdr.parentNode) hdr.parentNode.insertBefore(bar, hdr); else document.body.insertBefore(bar, document.body.firstChild);
+    }
+    if (!document.querySelector('.wa-float')) {
+      var w = document.createElement('a');
+      w.className = 'wa-float'; w.target = '_blank'; w.rel = 'noopener';
+      w.href = 'https://wa.me/' + PHONE + '?text=' + encodeURIComponent(ar ? 'السلام عليكم، أرغب في الاستفسار عن تصوير مكاني بجولة ثلاثية الأبعاد.' : "Hello, I'd like to ask about a 3D tour of my space.");
+      w.setAttribute('aria-label', ar ? 'راسلنا عبر واتساب' : 'WhatsApp us');
+      w.innerHTML = '<svg viewBox="0 0 24 24" width="28" height="28" aria-hidden="true"><path fill="currentColor" d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38c1.45.79 3.08 1.21 4.74 1.21 5.46 0 9.91-4.45 9.91-9.91C21.95 6.45 17.5 2 12.04 2zm5.8 14.02c-.24.68-1.42 1.3-1.96 1.35-.5.05-.97.23-3.27-.68-2.77-1.09-4.52-3.92-4.66-4.1-.13-.18-1.11-1.48-1.11-2.82 0-1.34.7-2 .95-2.27.25-.27.54-.34.72-.34h.52c.17 0 .4-.06.62.48.23.55.79 1.89.86 2.03.07.14.11.3.02.48-.09.18-.14.3-.27.46-.14.16-.29.36-.41.48-.14.14-.28.29-.12.56.16.27.71 1.17 1.52 1.9 1.05.93 1.93 1.22 2.2 1.36.27.14.43.11.59-.07.16-.18.68-.79.86-1.07.18-.27.36-.23.61-.14.25.09 1.59.75 1.86.89.27.14.45.2.52.32.07.11.07.66-.17 1.34z"/></svg><span>' + (ar ? 'واتساب' : 'WhatsApp') + '</span>';
+      document.body.appendChild(w);
+    }
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', run); else run();
+})();
