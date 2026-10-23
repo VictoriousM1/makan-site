@@ -742,8 +742,13 @@ html, body { background: #07090c; }
 }
 
 /* ── Floating WhatsApp button */
-.wa-float { position: fixed; inset-inline-end: 18px; bottom: calc(18px + env(safe-area-inset-bottom, 0px)); z-index: 60; display: inline-flex; align-items: center; gap: 8px; padding: 12px 18px 12px 14px; border-radius: 999px; background: #25d366; color: #fff; font-weight: 600; font-size: 15px; text-decoration: none; box-shadow: 0 6px 20px rgba(0,0,0,.35); transition: transform .15s ease, box-shadow .15s ease; }
+.wa-float { position: fixed; animation: waPulse 2.4s ease-in-out infinite; inset-inline-end: 18px; bottom: calc(18px + env(safe-area-inset-bottom, 0px)); z-index: 60; display: inline-flex; align-items: center; gap: 8px; padding: 12px 18px 12px 14px; border-radius: 999px; background: #25d366; color: #fff; font-weight: 600; font-size: 15px; text-decoration: none; box-shadow: 0 6px 20px rgba(0,0,0,.35); transition: transform .15s ease, box-shadow .15s ease; }
 .wa-float:hover { transform: translateY(-2px); box-shadow: 0 10px 26px rgba(0,0,0,.45); color: #fff; }
 @media (max-width: 640px) { .wa-float span { display: none; } .wa-float { padding: 14px; } }
 @media print { .wa-float, .offer-bar { display: none; } }
 @media (max-width: 640px) { .offer-x { order: 2; } .offer-cta { order: 3; } }
+
+@keyframes waPulse {
+  0%, 100% { box-shadow: 0 6px 20px rgba(37,211,102,.4); }
+  50% { box-shadow: 0 6px 28px rgba(37,211,102,.7); }
+}
