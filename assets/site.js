@@ -631,6 +631,7 @@ window.MakanInit = function () {
     b.addEventListener('click', function () {
       var f = document.createElement('iframe'); f.src = box.getAttribute('data-src') + (box.hasAttribute('data-raw') ? '' : '&play=1&qs=1'); f.loading = 'lazy'; f.referrerPolicy = 'no-referrer-when-downgrade'; f.allow = 'fullscreen; xr-spatial-tracking'; f.allowFullscreen = true; f.title = b.textContent;
       box.innerHTML = ''; box.appendChild(f);
+      if (window.mkTrack) window.mkTrack('tour_started');
     });
   });
 
@@ -646,7 +647,7 @@ window.MakanInit = function () {
       var ok = f.querySelector('.lead-ok'), err = f.querySelector('.lead-err');
       fetch(f.getAttribute('action'), { method: 'POST', headers: { 'Content-Type': 'application/json', Accept: 'application/json' }, body: JSON.stringify(data) })
         .then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
-        .then(function () { Array.prototype.forEach.call(f.children, function (c) { if (c !== ok) c.hidden = true; }); if (ok) ok.hidden = false; })
+        .then(function () { Array.prototype.forEach.call(f.children, function (c) { if (c !== ok) c.hidden = true; }); if (ok) ok.hidden = false; if (window.mkTrack) window.mkTrack('form_sent', { form: f.hasAttribute('data-attach-estimate') ? 'estimator' : 'contact' }); })
         .catch(function () { if (err) err.hidden = false; if (btn) { btn.disabled = false; btn.style.opacity = 1; } });
     });
   });
@@ -689,6 +690,7 @@ window.MakanInit = function () {
       $('[data-mail]', out).href = 'mailto:' + M.email + '?subject=' + encodeURIComponent(T.subject) + '&body=' + encodeURIComponent(summary);
     };
     est.addEventListener('input', run); est.addEventListener('change', run); run();
+    var estSeen = false; est.addEventListener('change', function () { if (!estSeen) { estSeen = true; if (window.mkTrack) window.mkTrack('estimate_made'); } });
   }
 
   // Turnaround
@@ -765,4 +767,48 @@ if (document.readyState === 'loading') document.addEventListener('DOMContentLoad
     }
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', run); else run();
+})();
+
+// ── Visitor tracking (all pages)
+// To switch tracking on, paste the IDs between the quotes below and publish.
+// Leave a value empty to keep that tool off. Nothing loads while both are empty.
+(function () {
+  'use strict';
+  var TRACK = {
+    ga4: '',      // Google Analytics 4 measurement ID, looks like G-AB12CD34EF
+    clarity: ''   // Microsoft Clarity project ID, looks like abcd1234ef
+  };
+  var live = /(^|\.)makan\.cloud$/.test(location.hostname); // never count local previews
+  var ga = live && /^G-[A-Z0-9]{6,}$/.test(TRACK.ga4), cl = live && /^[a-z0-9]{6,}$/.test(TRACK.clarity);
+
+  // One place for every event, so the same names reach each tool
+  window.mkTrack = function (name, params) {
+    try {
+      if (ga) window.gtag('event', name, params || {});
+      if (cl) window.clarity('event', name);
+    } catch (e) {}
+  };
+  if (!ga && !cl) return;
+
+  if (ga) {
+    window.dataLayer = window.dataLayer || [];
+    window.gtag = function () { window.dataLayer.push(arguments); };
+    window.gtag('js', new Date());
+    window.gtag('config', TRACK.ga4);
+    var g = document.createElement('script'); g.async = true; g.src = 'https://www.googletagmanager.com/gtag/js?id=' + TRACK.ga4; document.head.appendChild(g);
+  }
+  if (cl) {
+    window.clarity = window.clarity || function () { (window.clarity.q = window.clarity.q || []).push(arguments); };
+    var c = document.createElement('script'); c.async = true; c.src = 'https://www.clarity.ms/tag/' + TRACK.clarity; document.head.appendChild(c);
+  }
+
+  // Contact clicks: WhatsApp, phone, email. "place" says which part of the page the button was in.
+  document.addEventListener('click', function (e) {
+    var a = e.target && e.target.closest ? e.target.closest('a[href]') : null; if (!a) return;
+    var h = a.getAttribute('href') || '';
+    var name = /wa\.me\//.test(h) ? 'whatsapp_click' : /^tel:/.test(h) ? 'call_click' : /^mailto:/.test(h) ? 'email_click' : '';
+    if (!name) return;
+    var place = a.closest('.hero') ? 'hero' : a.closest('footer') ? 'footer' : a.closest('header') ? 'header' : /wa-float|(^|\s)wa(\s|$)/.test(a.className) ? 'floating_button' : a.closest('[data-est-out]') ? 'estimator' : 'page';
+    window.mkTrack(name, { place: place });
+  }, true);
 })();
