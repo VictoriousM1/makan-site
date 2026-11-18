@@ -775,11 +775,11 @@ if (document.readyState === 'loading') document.addEventListener('DOMContentLoad
 (function () {
   'use strict';
   var TRACK = {
-    ga4: '',      // Google Analytics 4 measurement ID, looks like G-AB12CD34EF
+    ga4: 'GTM-N7BDDL4C', // Google tag ID from Google Analytics: GTM-XXXXXXXX (current format) or G-XXXXXXXXXX (older format)
     clarity: ''   // Microsoft Clarity project ID, looks like abcd1234ef
   };
   var live = /(^|\.)makan\.cloud$/.test(location.hostname); // never count local previews
-  var ga = live && /^G-[A-Z0-9]{6,}$/.test(TRACK.ga4), cl = live && /^[a-z0-9]{6,}$/.test(TRACK.clarity);
+  var ga = live && /^(G|GTM)-[A-Z0-9]{6,}$/.test(TRACK.ga4), cl = live && /^[a-z0-9]{6,}$/.test(TRACK.clarity);
 
   // One place for every event, so the same names reach each tool
   window.mkTrack = function (name, params) {
@@ -794,8 +794,10 @@ if (document.readyState === 'loading') document.addEventListener('DOMContentLoad
     window.dataLayer = window.dataLayer || [];
     window.gtag = function () { window.dataLayer.push(arguments); };
     window.gtag('js', new Date());
-    window.gtag('config', TRACK.ga4);
-    var g = document.createElement('script'); g.async = true; g.src = 'https://www.googletagmanager.com/gtag/js?id=' + TRACK.ga4; document.head.appendChild(g);
+    // A GTM- tag is set up inside Google's own settings, so it takes no config line here; a G- tag needs one.
+    var container = TRACK.ga4.indexOf('GTM-') === 0;
+    if (!container) window.gtag('config', TRACK.ga4);
+    var g = document.createElement('script'); g.async = true; g.src = 'https://www.googletagmanager.com/' + (container ? 'gtm.js' : 'gtag/js') + '?id=' + TRACK.ga4; document.head.appendChild(g);
   }
   if (cl) {
     window.clarity = window.clarity || function () { (window.clarity.q = window.clarity.q || []).push(arguments); };
