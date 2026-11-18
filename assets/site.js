@@ -776,7 +776,7 @@ if (document.readyState === 'loading') document.addEventListener('DOMContentLoad
   'use strict';
   var TRACK = {
     ga4: 'GTM-N7BDDL4C', // Google tag ID from Google Analytics: GTM-XXXXXXXX (current format) or G-XXXXXXXXXX (older format)
-    clarity: ''   // Microsoft Clarity project ID, looks like abcd1234ef
+    clarity: 'zfmj0wmuas'   // Microsoft Clarity project ID, looks like abcd1234ef
   };
   var live = /(^|\.)makan\.cloud$/.test(location.hostname); // never count local previews
   var ga = live && /^(G|GTM)-[A-Z0-9]{6,}$/.test(TRACK.ga4), cl = live && /^[a-z0-9]{6,}$/.test(TRACK.clarity);
